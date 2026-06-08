@@ -1,31 +1,29 @@
 package raven.aluno;
 
-import com.formdev.flatlaf.FlatClientProperties;
 import net.miginfocom.swing.MigLayout;
 import raven.db.AlunoDAO;
+import raven.main.Dashboard;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 public class TelaAlunos extends JPanel {
 
     private final String perfil;
     private final AlunoDAO dao = new AlunoDAO();
-
-    private JTable          tabela;
+    private JTable tabela;
     private DefaultTableModel modelo;
-
-    private JTextField txtNome;
-    private JTextField txtEmail;
-    private JTextField txtCpf;
-    private JTextField txtTelefone;
-    private JButton    btnSalvar;
-    private JButton    btnNovo;
-    private JButton    btnExcluir;
-
+    private JTextField txtNome, txtEmail, txtCpf, txtTelefone;
+    private JButton btnSalvar, btnExcluir;
     private int idSelecionado = -1;
+
+    private static final Color COR = new Color(99, 102, 241);
 
     public TelaAlunos(String perfil) {
         this.perfil = perfil;
@@ -33,132 +31,122 @@ public class TelaAlunos extends JPanel {
     }
 
     private void init() {
-        setLayout(new MigLayout("fill, insets 24", "[grow][320!]", "[][][grow]"));
-        setOpaque(false);
+        setLayout(new BorderLayout());
+        setBackground(Dashboard.COR_FUNDO);
 
-        // Título
-        JLabel titulo = new JLabel("Gerenciar Alunos");
-        titulo.putClientProperty(FlatClientProperties.STYLE, "font:bold +14");
-        add(titulo, "span 2, wrap");
+        // Cabeçalho
+        JPanel header = new JPanel(new MigLayout("insets 28 36 16 36", "[grow][]"));
+        header.setBackground(Dashboard.COR_FUNDO);
 
-        // Barra de busca + botão novo
-        JTextField txtBusca = new JTextField();
-        txtBusca.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Buscar por nome ou e-mail...");
+        JPanel tituloPanel = new JPanel();
+        tituloPanel.setLayout(new BoxLayout(tituloPanel, BoxLayout.Y_AXIS));
+        tituloPanel.setOpaque(false);
+        JLabel lbTitulo = new JLabel("Gerenciar Alunos");
+        lbTitulo.setFont(new Font("Dialog", Font.BOLD, 26));
+        lbTitulo.setForeground(Dashboard.COR_TEXTO);
+        JLabel lbSub = new JLabel("Cadastre, edite e gerencie os alunos do sistema.");
+        lbSub.setFont(new Font("Dialog", Font.PLAIN, 13));
+        lbSub.setForeground(Dashboard.COR_TEXTO_MUTED);
+        tituloPanel.add(lbTitulo);
+        tituloPanel.add(Box.createVerticalStrut(4));
+        tituloPanel.add(lbSub);
+
+        JButton btnNovo = criarBotaoPrimario("+ Novo Aluno", COR);
+        btnNovo.addActionListener(e -> limparFormulario());
+
+        header.add(tituloPanel, "grow");
+        header.add(btnNovo);
+        add(header, BorderLayout.NORTH);
+
+        // Corpo
+        JPanel corpo = new JPanel(new MigLayout("fill, insets 0 36 36 36, gap 20", "[grow][320!]", "[grow]"));
+        corpo.setBackground(Dashboard.COR_FUNDO);
+
+        // Tabela
+        JPanel tabelaPanel = criarPainelTabela();
+        corpo.add(tabelaPanel, "grow, push");
+        corpo.add(criarFormulario(), "growy, pushy, aligny top");
+        add(corpo, BorderLayout.CENTER);
+
+        carregarTabela();
+    }
+
+    private JPanel criarPainelTabela() {
+        JPanel p = new JPanel(new MigLayout("fill, insets 0", "[grow]", "[][grow]"));
+        p.setOpaque(false);
+
+        // Barra de busca
+        JTextField txtBusca = criarCampoBusca("Buscar por nome ou e-mail...");
         txtBusca.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void insertUpdate(javax.swing.event.DocumentEvent e)  { filtrar(txtBusca.getText()); }
             public void removeUpdate(javax.swing.event.DocumentEvent e)  { filtrar(txtBusca.getText()); }
             public void changedUpdate(javax.swing.event.DocumentEvent e) { filtrar(txtBusca.getText()); }
         });
+        p.add(txtBusca, "growx, gapy 0 12, wrap");
 
-        btnNovo = new JButton("+ Novo Aluno");
-        btnNovo.putClientProperty(FlatClientProperties.STYLE,
-                "[light]background:darken(@background,8%);" +
-                "[dark]background:lighten(@background,8%);" +
-                "borderWidth:0;focusWidth:0;innerFocusWidth:0;arc:8");
-        btnNovo.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnNovo.addActionListener(e -> limparFormulario());
-
-        add(txtBusca, "growx");
-        add(btnNovo,  "wrap");
-
-        // Tabela
         String[] colunas = {"ID", "Nome", "E-mail", "CPF", "Telefone"};
         modelo  = new DefaultTableModel(colunas, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         };
-        tabela  = new JTable(modelo);
-        tabela.setRowHeight(28);
+        tabela = criarTabela(modelo);
         tabela.getColumnModel().getColumn(0).setMaxWidth(50);
-        tabela.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabela.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) preencherFormulario();
         });
 
-        JScrollPane scroll = new JScrollPane(tabela);
-        scroll.putClientProperty(FlatClientProperties.STYLE,
-                "arc:10;" +
-                "[light]border:1,1,1,1,darken(@background,10%);" +
-                "[dark]border:1,1,1,1,lighten(@background,10%)");
-        add(scroll, "grow, push");
-
-        // Formulário lateral
-        add(criarFormulario(), "growy, pushy, aligny top");
-
-        carregarTabela();
+        JScrollPane scroll = criarScrollPane(tabela);
+        p.add(scroll, "grow, push");
+        return p;
     }
 
     private JPanel criarFormulario() {
-        JPanel form = new JPanel(new MigLayout("wrap, fillx, insets 20", "[grow]"));
-        form.putClientProperty(FlatClientProperties.STYLE,
-                "arc:14;" +
-                "[light]background:darken(@background,3%);" +
-                "[dark]background:lighten(@background,3%)");
+        JPanel form = new JPanel(new MigLayout("wrap, fillx, insets 24", "[grow]"));
+        form.setBackground(Dashboard.COR_CARD);
+        form.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(3, 0, 0, 0, COR),
+                BorderFactory.createLineBorder(Dashboard.COR_BORDA, 1)));
 
         JLabel lbForm = new JLabel("Dados do Aluno");
-        lbForm.putClientProperty(FlatClientProperties.STYLE, "font:bold +2");
+        lbForm.setFont(new Font("Dialog", Font.BOLD, 15));
+        lbForm.setForeground(Dashboard.COR_TEXTO);
 
-        txtNome     = new JTextField();
-        txtEmail    = new JTextField();
-        txtCpf      = new JTextField();
-        txtTelefone = new JTextField();
+        txtNome     = criarCampo("Nome completo");
+        txtEmail    = criarCampo("E-mail");
+        txtCpf      = criarCampo("000.000.000-00");
+        txtTelefone = criarCampo("(00) 00000-0000");
 
-        txtNome.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT,     "Nome completo");
-        txtEmail.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT,    "E-mail");
-        txtCpf.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT,      "000.000.000-00");
-        txtTelefone.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "(00) 00000-0000");
-
-        btnSalvar = new JButton("Salvar");
-        btnSalvar.putClientProperty(FlatClientProperties.STYLE,
-                "[light]background:darken(@background,10%);" +
-                "[dark]background:lighten(@background,10%);" +
-                "borderWidth:0;focusWidth:0;innerFocusWidth:0");
-        btnSalvar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnSalvar.addActionListener(e -> salvar());
-
-        btnExcluir = new JButton("Excluir");
-        btnExcluir.putClientProperty(FlatClientProperties.STYLE,
-                "foreground:#e74c3c;" +
-                "[light]background:darken(@background,5%);" +
-                "[dark]background:lighten(@background,5%);" +
-                "borderWidth:0;focusWidth:0;innerFocusWidth:0");
-        btnExcluir.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnSalvar  = criarBotaoPrimario("Salvar", COR);
+        btnExcluir = criarBotaoPerigo("Excluir");
         btnExcluir.setEnabled(false);
+
+        btnSalvar.addActionListener(e -> salvar());
         btnExcluir.addActionListener(e -> excluir());
 
-        form.add(lbForm, "gapy 0 12");
-        form.add(new JLabel("Nome"),     "gapy 4");
-        form.add(txtNome,     "growx");
-        form.add(new JLabel("E-mail"),   "gapy 4");
-        form.add(txtEmail,    "growx");
-        form.add(new JLabel("CPF"),      "gapy 4");
-        form.add(txtCpf,      "growx");
-        form.add(new JLabel("Telefone"), "gapy 4");
+        form.add(lbForm,                 "gapy 0 16");
+        form.add(criarLabel("Nome"),     "gapy 4");
+        form.add(txtNome,   "growx");
+        form.add(criarLabel("E-mail"),   "gapy 8");
+        form.add(txtEmail,  "growx");
+        form.add(criarLabel("CPF"),      "gapy 8");
+        form.add(txtCpf,    "growx");
+        form.add(criarLabel("Telefone"), "gapy 8");
         form.add(txtTelefone, "growx");
-        form.add(btnSalvar,   "growx, gapy 14 4");
-        form.add(btnExcluir,  "growx");
-
+        form.add(btnSalvar,  "growx, gapy 16 6");
+        form.add(btnExcluir, "growx");
         return form;
     }
 
-    private void carregarTabela() {
-        carregarTabela(null);
-    }
-
+    private void carregarTabela() { carregarTabela(null); }
     private void carregarTabela(String filtro) {
         modelo.setRowCount(0);
-        List<String[]> lista = dao.listar();
-        for (String[] linha : lista) {
+        for (String[] l : dao.listar()) {
             if (filtro == null || filtro.isBlank()
-                    || linha[1].toLowerCase().contains(filtro.toLowerCase())
-                    || linha[2].toLowerCase().contains(filtro.toLowerCase())) {
-                modelo.addRow(linha);
-            }
+                    || l[1].toLowerCase().contains(filtro.toLowerCase())
+                    || l[2].toLowerCase().contains(filtro.toLowerCase()))
+                modelo.addRow(l);
         }
     }
-
-    private void filtrar(String texto) {
-        carregarTabela(texto);
-    }
+    private void filtrar(String t) { carregarTabela(t); }
 
     private void preencherFormulario() {
         int row = tabela.getSelectedRow();
@@ -173,55 +161,113 @@ public class TelaAlunos extends JPanel {
 
     private void limparFormulario() {
         idSelecionado = -1;
-        txtNome.setText("");
-        txtEmail.setText("");
-        txtCpf.setText("");
-        txtTelefone.setText("");
+        txtNome.setText(""); txtEmail.setText("");
+        txtCpf.setText(""); txtTelefone.setText("");
         tabela.clearSelection();
         btnExcluir.setEnabled(false);
         txtNome.requestFocus();
     }
 
     private void salvar() {
-        String nome     = txtNome.getText().trim();
-        String email    = txtEmail.getText().trim();
-        String cpf      = txtCpf.getText().trim();
-        String telefone = txtTelefone.getText().trim();
-
+        String nome = txtNome.getText().trim(), email = txtEmail.getText().trim(),
+                cpf  = txtCpf.getText().trim(),  tel   = txtTelefone.getText().trim();
         if (nome.isEmpty() || email.isEmpty() || cpf.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Nome, e-mail e CPF são obrigatórios.", "Aviso", JOptionPane.WARNING_MESSAGE);
-            return;
+            JOptionPane.showMessageDialog(this, "Nome, e-mail e CPF são obrigatórios.", "Aviso", JOptionPane.WARNING_MESSAGE); return;
         }
-
-        boolean ok;
-        if (idSelecionado == -1) {
-            ok = dao.inserir(nome, email, cpf, telefone);
-        } else {
-            ok = dao.atualizar(idSelecionado, nome, email, cpf, telefone);
-        }
-
-        if (ok) {
-            JOptionPane.showMessageDialog(this, "Aluno salvo com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-            limparFormulario();
-            carregarTabela();
-        } else {
-            JOptionPane.showMessageDialog(this, "Erro ao salvar. Verifique se CPF ou e-mail já estão cadastrados.", "Erro", JOptionPane.ERROR_MESSAGE);
-        }
+        boolean ok = idSelecionado == -1 ? dao.inserir(nome, email, cpf, tel) : dao.atualizar(idSelecionado, nome, email, cpf, tel);
+        if (ok) { JOptionPane.showMessageDialog(this, "Aluno salvo!", "Sucesso", JOptionPane.INFORMATION_MESSAGE); limparFormulario(); carregarTabela(); }
+        else    { JOptionPane.showMessageDialog(this, "Erro ao salvar. CPF ou e-mail já cadastrado.", "Erro", JOptionPane.ERROR_MESSAGE); }
     }
 
     private void excluir() {
         if (idSelecionado < 0) return;
-        int resp = JOptionPane.showConfirmDialog(this,
-                "Deseja excluir este aluno?", "Confirmar exclusão",
-                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-        if (resp == JOptionPane.YES_OPTION) {
-            if (dao.excluir(idSelecionado)) {
-                JOptionPane.showMessageDialog(this, "Aluno excluído.", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                limparFormulario();
-                carregarTabela();
-            } else {
-                JOptionPane.showMessageDialog(this, "Erro ao excluir.", "Erro", JOptionPane.ERROR_MESSAGE);
-            }
+        if (JOptionPane.showConfirmDialog(this, "Excluir este aluno?", "Confirmar", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            if (dao.excluir(idSelecionado)) { JOptionPane.showMessageDialog(this, "Aluno excluído.", "Sucesso", JOptionPane.INFORMATION_MESSAGE); limparFormulario(); carregarTabela(); }
+            else JOptionPane.showMessageDialog(this, "Erro ao excluir.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    // ── Helpers de UI ────────────────────────────────────────────────
+    public static JTextField criarCampo(String placeholder) {
+        JTextField f = new JTextField();
+        f.setBackground(new Color(25, 25, 40));
+        f.setForeground(Dashboard.COR_TEXTO);
+        f.setCaretColor(Dashboard.COR_TEXTO);
+        f.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Dashboard.COR_BORDA, 1),
+                BorderFactory.createEmptyBorder(8, 12, 8, 12)));
+        f.putClientProperty("JTextField.placeholderText", placeholder);
+        return f;
+    }
+
+    public static JTextField criarCampoBusca(String placeholder) {
+        JTextField f = criarCampo(placeholder);
+        f.setFont(new Font("Dialog", Font.PLAIN, 13));
+        return f;
+    }
+
+    public static JLabel criarLabel(String texto) {
+        JLabel lb = new JLabel(texto);
+        lb.setFont(new Font("Dialog", Font.PLAIN, 12));
+        lb.setForeground(Dashboard.COR_TEXTO_MUTED);
+        return lb;
+    }
+
+    public static JButton criarBotaoPrimario(String texto, Color cor) {
+        JButton btn = new JButton(texto);
+        btn.setFont(new Font("Dialog", Font.BOLD, 13));
+        btn.setForeground(Color.WHITE);
+        btn.setBackground(cor);
+        btn.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) { btn.setBackground(cor.darker()); }
+            public void mouseExited(MouseEvent e)  { btn.setBackground(cor); }
+        });
+        return btn;
+    }
+
+    public static JButton criarBotaoPerigo(String texto) {
+        Color cor = new Color(239, 68, 68);
+        JButton btn = new JButton(texto);
+        btn.setFont(new Font("Dialog", Font.PLAIN, 13));
+        btn.setForeground(cor);
+        btn.setBackground(new Color(239, 68, 68, 20));
+        btn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(239, 68, 68, 80), 1),
+                BorderFactory.createEmptyBorder(9, 20, 9, 20)));
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return btn;
+    }
+
+    public static JTable criarTabela(DefaultTableModel modelo) {
+        JTable t = new JTable(modelo);
+        t.setBackground(Dashboard.COR_CARD);
+        t.setForeground(Dashboard.COR_TEXTO);
+        t.setSelectionBackground(new Color(99, 102, 241, 60));
+        t.setSelectionForeground(Color.WHITE);
+        t.setGridColor(Dashboard.COR_BORDA);
+        t.setRowHeight(34);
+        t.setFont(new Font("Dialog", Font.PLAIN, 13));
+        t.getTableHeader().setBackground(new Color(22, 22, 38));
+        t.getTableHeader().setForeground(Dashboard.COR_TEXTO_MUTED);
+        t.getTableHeader().setFont(new Font("Dialog", Font.BOLD, 12));
+        t.getTableHeader().setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Dashboard.COR_BORDA));
+        t.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        t.setShowVerticalLines(false);
+        DefaultTableCellRenderer cr = new DefaultTableCellRenderer();
+        cr.setBorder(new EmptyBorder(0, 12, 0, 12));
+        t.setDefaultRenderer(Object.class, cr);
+        return t;
+    }
+
+    public static JScrollPane criarScrollPane(JTable tabela) {
+        JScrollPane scroll = new JScrollPane(tabela);
+        scroll.setBackground(Dashboard.COR_CARD);
+        scroll.getViewport().setBackground(Dashboard.COR_CARD);
+        scroll.setBorder(BorderFactory.createLineBorder(Dashboard.COR_BORDA, 1));
+        return scroll;
     }
 }
