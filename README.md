@@ -1,53 +1,89 @@
 # EducTech Manager
 
-Sistema desktop de gestão educacional desenvolvido em Java Swing + MySQL.
+> Sistema desktop de gestão educacional desenvolvido em Java Swing + MySQL.  
+> **ODS 4 — Educação de Qualidade** | Projeto UC Programação de Soluções Computacionais 2026/1
 
 ---
 
-## Requisitos
+## Sobre o projeto
 
-| Ferramenta | Versão mínima |
-|------------|---------------|
-| JDK        | 17+           |
-| MySQL      | 8.0+          |
-| IDE        | IntelliJ IDEA / Eclipse / NetBeans |
+O **EducTech Manager** é um sistema de gestão educacional desenvolvido como projeto da UC Programação de Soluções Computacionais. O sistema está alinhado ao **ODS 4 — Educação de Qualidade** da ONU, contribuindo para a organização e o acesso à informação em instituições de ensino.
 
-**Dependências JAR** (adicione ao classpath do projeto):
-- `flatlaf-3.x.jar`
-- `flatlaf-fonts-roboto-x.x.jar`
-- `miglayout-swing-x.x.jar`
-- `mysql-connector-j-8.x.jar`
+O sistema permite o gerenciamento completo de alunos, cursos, matrículas e usuários, com controle de acesso por perfil.
 
 ---
 
-## Configuração do banco de dados
+## Funcionalidades
 
-### 1. Execute o script SQL
+- **Login seguro** com autenticação por usuário ou e-mail e senha criptografada (SHA-256)
+- **Cadastro de novos usuários** diretamente pela tela de registro
+- **Dashboard** com painel de controle exibindo totais de alunos, cursos, matrículas e usuários
+- **Gerenciar Alunos** — cadastro, edição, busca e exclusão
+- **Gerenciar Cursos** — cadastro, edição, busca e exclusão
+- **Gerenciar Matrículas** — vinculação de alunos a cursos, atualização de status
+- **Gerenciar Usuários** — exclusivo para ADMIN, com controle de perfis
+- **Controle de acesso por perfil**:
+  - **ADMIN** → acesso completo a todas as funcionalidades
+  - **ALUNO** → acesso limitado ao dashboard e consultas
 
-```sql
+---
+
+## Tecnologias utilizadas
+
+| Tecnologia | Versão |
+|---|---|
+| Java | JDK 24 |
+| Java Swing | javax.swing |
+| MySQL | 8.0 |
+| FlatLaf | 3.5.4 |
+| MigLayout | 11.4.2 |
+| MySQL Connector/J | 9.7.0 |
+
+---
+
+## Como executar
+
+### Pré-requisitos
+- JDK 17 ou superior
+- MySQL 8.0 ou superior
+- IntelliJ IDEA (ou outra IDE Java)
+
+### 1. Configurar o banco de dados
+
+Execute o script SQL no MySQL Workbench ou terminal:
+
+```bash
 mysql -u root -p < schema.sql
 ```
 
-Ou abra o arquivo `schema.sql` no MySQL Workbench e execute.
-
-### 2. Ajuste a senha do MySQL
+### 2. Configurar a conexão
 
 Edite o arquivo `src/raven/db/Conexao.java`:
 
 ```java
-private static final String SENHA = "SUA_SENHA_AQUI";
+private static final String SENHA = "sua_senha_mysql";
 ```
+
+### 3. Adicionar dependências (JARs)
+
+Adicione ao classpath do projeto:
+- `flatlaf-3.5.4.jar`
+- `miglayout-swing-11.4.2.jar`
+- `miglayout-core-11.4.2.jar`
+- `mysql-connector-j-9.7.0.jar`
+
+### 4. Executar
+
+Rode a classe principal: `raven.main.Application`
 
 ---
 
-## Usuários padrão (criados pelo script)
+## Usuários padrão
 
-| Login   | Senha     | Perfil |
-|---------|-----------|--------|
-| `admin` | `admin123`| ADMIN  |
-| `aluno` | `aluno123`| ALUNO  |
-
-> **Importante:** As senhas são armazenadas com hash SHA-256, igual ao `SHA2()` do MySQL.
+| Login | Senha | Perfil |
+|---|---|---|
+| `admin` | `admin123` | ADMIN |
+| `aluno` | `aluno123` | ALUNO |
 
 ---
 
@@ -69,33 +105,13 @@ src/
 
 ---
 
-## Funcionalidades
+## ODS 4 — Educação de Qualidade
 
-### Tela de Login
-- Autenticação por login ou e-mail + senha (SHA-256)
-- Link para cadastro de nova conta
-
-### Tela de Cadastro
-- Cria conta com perfil ALUNO
-- Validação de campos e verificação de duplicidade
-
-### Dashboard
-- Sidebar com menu de navegação
-- Cards com totais de alunos, cursos, matrículas e usuários
-- Atalhos rápidos para as telas de gerenciamento
-- Botão de sair (volta ao login)
-
-### Gerenciar Alunos / Cursos / Matrículas / Usuários
-- Listagem em tabela com busca em tempo real
-- Formulário lateral para inserir/editar
-- Exclusão com confirmação (exclusão lógica para alunos, usuários e cursos)
-
-### Controle de acesso
-- **ADMIN**: acesso completo a todas as telas
-- **ALUNO**: acesso ao dashboard e telas de consulta; sem acesso à tela de Usuários
+Este projeto está alinhado ao **Objetivo de Desenvolvimento Sustentável 4** da ONU, que busca assegurar a educação inclusiva, equitativa e de qualidade. O EducTech Manager contribui facilitando a gestão de instituições de ensino, organizando informações de alunos, cursos e matrículas de forma eficiente e acessível.
 
 ---
 
-## Ponto de entrada
+## Professores responsáveis
 
-Classe principal: `raven.main.Application`
+Cristiane Fidelix e Erica Lopes  
+UC Programação de Soluções Computacionais — 2026/1
