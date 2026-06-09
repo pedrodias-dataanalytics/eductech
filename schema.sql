@@ -1,16 +1,11 @@
--- =============================================================
---  EducTech Manager — Script completo do banco de dados
--- =============================================================
-
 CREATE DATABASE IF NOT EXISTS eductech_manager
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
 USE eductech_manager;
 
--- -------------------------------------------------------------
---  Tabela: usuarios
--- -------------------------------------------------------------
+-- Tabela usuarios
+
 CREATE TABLE IF NOT EXISTS usuarios (
     id      INT          NOT NULL AUTO_INCREMENT,
     nome    VARCHAR(100) NOT NULL,
@@ -22,9 +17,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
--- -------------------------------------------------------------
---  Tabela: alunos
--- -------------------------------------------------------------
+--  Tabela alunos
+
 CREATE TABLE IF NOT EXISTS alunos (
     id       INT          NOT NULL AUTO_INCREMENT,
     nome     VARCHAR(100) NOT NULL,
@@ -35,9 +29,8 @@ CREATE TABLE IF NOT EXISTS alunos (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
--- -------------------------------------------------------------
---  Tabela: cursos
--- -------------------------------------------------------------
+--  Tabela cursos
+
 CREATE TABLE IF NOT EXISTS cursos (
     id       INT          NOT NULL AUTO_INCREMENT,
     nome     VARCHAR(100) NOT NULL,
@@ -47,9 +40,8 @@ CREATE TABLE IF NOT EXISTS cursos (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
--- -------------------------------------------------------------
---  Tabela: matriculas
--- -------------------------------------------------------------
+--  Tabela matriculas
+
 CREATE TABLE IF NOT EXISTS matriculas (
     id         INT  NOT NULL AUTO_INCREMENT,
     aluno_id   INT  NOT NULL,
@@ -61,11 +53,9 @@ CREATE TABLE IF NOT EXISTS matriculas (
     FOREIGN KEY (curso_id) REFERENCES cursos(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- -------------------------------------------------------------
 --  Dados iniciais
--- -------------------------------------------------------------
 
--- Administrador padrão  (senha: admin123  → SHA-256)
+-- Administrador padrão
 INSERT INTO usuarios (nome, login, email, senha, perfil) VALUES
 ('Administrador', 'admin', 'admin@eductech.com',
  SHA2('admin123', 256), 'ADMIN');
@@ -89,7 +79,7 @@ INSERT INTO matriculas (aluno_id, curso_id, data_inicio, status) VALUES
 (2, 1, CURDATE(), 'ATIVA'),
 (3, 3, CURDATE(), 'ATIVA');
 
--- Usuário padrão tipo ALUNO (senha: aluno123)
+-- Usuário padrão tipo ALUNO
 INSERT INTO usuarios (nome, login, email, senha, perfil) VALUES
 ('Aluno Padrão', 'aluno', 'aluno@eductech.com',
  SHA2('aluno123', 256), 'ALUNO');
