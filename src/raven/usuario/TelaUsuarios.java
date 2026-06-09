@@ -50,7 +50,7 @@ public class TelaUsuarios extends JPanel {
         header.add(btnNovo);
         add(header, BorderLayout.NORTH);
 
-        JPanel corpo = new JPanel(new MigLayout("fill, insets 0 36 36 36, gap 20", "[grow][340!]", "[grow]"));
+        JPanel corpo = new JPanel(new MigLayout("fill, insets 0 28 28 28, gap 18", "[720,grow,fill][320!,fill]", "[grow]"));
         corpo.setBackground(Dashboard.COR_FUNDO);
 
         JPanel tabelaPanel = new JPanel(new MigLayout("fill, insets 0", "[grow]", "[][grow]"));
@@ -72,13 +72,13 @@ public class TelaUsuarios extends JPanel {
         tabela.getSelectionModel().addListSelectionListener(e -> { if (!e.getValueIsAdjusting()) preencherFormulario(); });
         tabelaPanel.add(TelaAlunos.criarScrollPane(tabela), "grow, push");
         corpo.add(tabelaPanel, "grow, push");
-        corpo.add(criarFormulario(), "growy, pushy, aligny top");
+        corpo.add(criarFormulario(), "growx, aligny top");
         add(corpo, BorderLayout.CENTER);
         carregarTabela();
     }
 
     private JPanel criarFormulario() {
-        JPanel form = new JPanel(new MigLayout("wrap, fillx, insets 24", "[grow]"));
+        JPanel form = new JPanel(new MigLayout("wrap, fillx, insets 18", "[grow]"));
         form.setBackground(Dashboard.COR_CARD);
         form.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(3, 0, 0, 0, COR),
@@ -92,10 +92,10 @@ public class TelaUsuarios extends JPanel {
         txtLogin  = TelaAlunos.criarCampo("Login");
         txtEmail  = TelaAlunos.criarCampo("E-mail");
         cmbPerfil = new JComboBox<>(new String[]{"ALUNO", "ADMIN"});
-        cmbPerfil.setBackground(new Color(25, 25, 40));
+        cmbPerfil.setBackground(Color.WHITE);
         cmbPerfil.setForeground(Dashboard.COR_TEXTO);
         txtSenha  = new JPasswordField();
-        txtSenha.setBackground(new Color(25, 25, 40));
+        txtSenha.setBackground(Color.WHITE);
         txtSenha.setForeground(Dashboard.COR_TEXTO);
         txtSenha.setCaretColor(Dashboard.COR_TEXTO);
         txtSenha.setBorder(BorderFactory.createCompoundBorder(
@@ -112,15 +112,15 @@ public class TelaUsuarios extends JPanel {
         btnAlterarSenha.addActionListener(e -> alterarSenha());
         btnExcluir.addActionListener(e -> excluir());
 
-        form.add(lbForm, "gapy 0 16");
-        form.add(TelaAlunos.criarLabel("Nome"),   "gapy 4");  form.add(txtNome,   "growx");
-        form.add(TelaAlunos.criarLabel("Login"),  "gapy 8");  form.add(txtLogin,  "growx");
-        form.add(TelaAlunos.criarLabel("E-mail"), "gapy 8");  form.add(txtEmail,  "growx");
-        form.add(TelaAlunos.criarLabel("Perfil"), "gapy 8");  form.add(cmbPerfil, "growx");
-        form.add(TelaAlunos.criarLabel("Senha (novo usuário)"), "gapy 8"); form.add(txtSenha, "growx");
-        form.add(btnSalvar,       "growx, gapy 16 6");
-        form.add(btnAlterarSenha, "growx, gapy 0 6");
-        form.add(btnExcluir,      "growx");
+        form.add(lbForm, "gapy 0 10");
+        form.add(TelaAlunos.criarLabel("Nome"),   "gapy 4");  form.add(txtNome,   "growx, h 38!");
+        form.add(TelaAlunos.criarLabel("Login"),  "gapy 8");  form.add(txtLogin,  "growx, h 38!");
+        form.add(TelaAlunos.criarLabel("E-mail"), "gapy 8");  form.add(txtEmail,  "growx, h 38!");
+        form.add(TelaAlunos.criarLabel("Perfil"), "gapy 8");  form.add(cmbPerfil, "growx, h 38!");
+        form.add(TelaAlunos.criarLabel("Senha (novo usuário)"), "gapy 8"); form.add(txtSenha, "growx, h 38!");
+        form.add(btnSalvar,       "growx, gapy 12 6, h 42!");
+        form.add(btnAlterarSenha, "growx, gapy 0 6, h 40!");
+        form.add(btnExcluir,      "growx, h 40!");
         return form;
     }
 

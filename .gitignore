@@ -1,0 +1,16 @@
+# Build outputs
+target/
+out/
+*.class
+
+# IDE files
+.idea/
+*.iml
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+*.log
+
+# Local secrets/config
+.env

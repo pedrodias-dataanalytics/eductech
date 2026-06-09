@@ -49,11 +49,12 @@ public class TelaCursos extends JPanel {
         tituloPanel.add(lbSub);
         JButton btnNovo = TelaAlunos.criarBotaoPrimario("+ Novo Curso", COR);
         btnNovo.addActionListener(e -> limparFormulario());
+        btnNovo.setVisible(podeEditar());
         header.add(tituloPanel, "grow");
         header.add(btnNovo);
         add(header, BorderLayout.NORTH);
 
-        JPanel corpo = new JPanel(new MigLayout("fill, insets 0 36 36 36, gap 20", "[grow][320!]", "[grow]"));
+        JPanel corpo = new JPanel(new MigLayout("fill, insets 0 28 28 28, gap 18", "[700,grow,fill][300!,fill]", "[grow]"));
         corpo.setBackground(Dashboard.COR_FUNDO);
 
         // Tabela
@@ -75,13 +76,13 @@ public class TelaCursos extends JPanel {
         tabela.getSelectionModel().addListSelectionListener(e -> { if (!e.getValueIsAdjusting()) preencherFormulario(); });
         tabelaPanel.add(TelaAlunos.criarScrollPane(tabela), "grow, push");
         corpo.add(tabelaPanel, "grow, push");
-        corpo.add(criarFormulario(), "growy, pushy, aligny top");
+        corpo.add(criarFormulario(), "growx, aligny top");
         add(corpo, BorderLayout.CENTER);
         carregarTabela();
     }
 
     private JPanel criarFormulario() {
-        JPanel form = new JPanel(new MigLayout("wrap, fillx, insets 24", "[grow]"));
+        JPanel form = new JPanel(new MigLayout("wrap, fillx, insets 18", "[grow]"));
         form.setBackground(Dashboard.COR_CARD);
         form.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(3, 0, 0, 0, COR),
@@ -95,30 +96,31 @@ public class TelaCursos extends JPanel {
         txtDescricao = new JTextArea(4, 20);
         txtDescricao.setLineWrap(true);
         txtDescricao.setWrapStyleWord(true);
-        txtDescricao.setBackground(new Color(25, 25, 40));
+        txtDescricao.setBackground(Color.WHITE);
         txtDescricao.setForeground(Dashboard.COR_TEXTO);
         txtDescricao.setCaretColor(Dashboard.COR_TEXTO);
         txtDescricao.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Dashboard.COR_BORDA, 1),
                 BorderFactory.createEmptyBorder(8, 12, 8, 12)));
         spnCarga = new JSpinner(new SpinnerNumberModel(0, 0, 9999, 1));
-        spnCarga.setBackground(new Color(25, 25, 40));
+        spnCarga.setBackground(Color.WHITE);
 
         btnSalvar  = TelaAlunos.criarBotaoPrimario("Salvar", COR);
         btnExcluir = TelaAlunos.criarBotaoPerigo("Excluir");
         btnExcluir.setEnabled(false);
         btnSalvar.addActionListener(e -> salvar());
         btnExcluir.addActionListener(e -> excluir());
+        aplicarPermissao();
 
-        form.add(lbForm, "gapy 0 16");
+        form.add(lbForm, "gapy 0 10");
         form.add(TelaAlunos.criarLabel("Nome"),             "gapy 4");
-        form.add(txtNome, "growx");
+        form.add(txtNome, "growx, h 38!");
         form.add(TelaAlunos.criarLabel("Descrição"),        "gapy 8");
-        form.add(new JScrollPane(txtDescricao), "growx, h 90!");
+        form.add(new JScrollPane(txtDescricao), "growx, h 76!");
         form.add(TelaAlunos.criarLabel("Carga horária (h)"),"gapy 8");
-        form.add(spnCarga, "growx");
-        form.add(btnSalvar,  "growx, gapy 16 6");
-        form.add(btnExcluir, "growx");
+        form.add(spnCarga, "growx, h 38!");
+        form.add(btnSalvar,  "growx, gapy 12 6, h 42!");
+        form.add(btnExcluir, "growx, h 40!");
         return form;
     }
 
@@ -138,7 +140,7 @@ public class TelaCursos extends JPanel {
         txtNome.setText(modelo.getValueAt(row, 1).toString());
         txtDescricao.setText(modelo.getValueAt(row, 2).toString());
         spnCarga.setValue(Integer.parseInt(modelo.getValueAt(row, 3).toString()));
-        btnExcluir.setEnabled(true);
+        btnExcluir.setEnabled(podeEditar());
     }
 
     private void limparFormulario() {
@@ -148,6 +150,10 @@ public class TelaCursos extends JPanel {
     }
 
     private void salvar() {
+        if (!podeEditar()) {
+            mostrarAcessoConsulta();
+            return;
+        }
         String nome = txtNome.getText().trim(), desc = txtDescricao.getText().trim();
         int carga = (int) spnCarga.getValue();
         if (nome.isEmpty()) { JOptionPane.showMessageDialog(this, "Nome obrigatório.", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
@@ -157,10 +163,32 @@ public class TelaCursos extends JPanel {
     }
 
     private void excluir() {
+        if (!podeEditar()) {
+            mostrarAcessoConsulta();
+            return;
+        }
         if (idSelecionado < 0) return;
         if (JOptionPane.showConfirmDialog(this, "Excluir este curso?", "Confirmar", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             if (dao.excluir(idSelecionado)) { JOptionPane.showMessageDialog(this, "Curso excluído.", "Sucesso", JOptionPane.INFORMATION_MESSAGE); limparFormulario(); carregarTabela(); }
             else JOptionPane.showMessageDialog(this, "Erro ao excluir.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private boolean podeEditar() {
+        return "ADMIN".equals(perfil);
+    }
+
+    private void aplicarPermissao() {
+        boolean editar = podeEditar();
+        txtNome.setEditable(editar);
+        txtDescricao.setEditable(editar);
+        spnCarga.setEnabled(editar);
+        btnSalvar.setVisible(editar);
+        btnExcluir.setVisible(editar);
+    }
+
+    private void mostrarAcessoConsulta() {
+        JOptionPane.showMessageDialog(this,
+                "Seu perfil permite apenas consulta.", "Acesso limitado", JOptionPane.INFORMATION_MESSAGE);
     }
 }

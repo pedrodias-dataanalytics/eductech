@@ -1,117 +1,109 @@
 # EducTech Manager
 
-> Sistema desktop de gestão educacional desenvolvido em Java Swing + MySQL.  
-> **ODS 4 — Educação de Qualidade** | Projeto UC Programação de Soluções Computacionais 2026/1
+Sistema desktop de gestao educacional desenvolvido em Java Swing + MySQL.
 
----
+**ODS 4 - Educacao de Qualidade**  
+Projeto da UC Programacao de Solucoes Computacionais 2026/1
 
 ## Sobre o projeto
 
-O **EducTech Manager** é um sistema de gestão educacional desenvolvido como projeto da UC Programação de Soluções Computacionais. O sistema está alinhado ao **ODS 4 — Educação de Qualidade** da ONU, contribuindo para a organização e o acesso à informação em instituições de ensino.
-
-O sistema permite o gerenciamento completo de alunos, cursos, matrículas e usuários, com controle de acesso por perfil.
-
----
+O EducTech Manager organiza alunos, cursos, matriculas e usuarios em uma interface desktop com controle de acesso por perfil. O sistema atende aos requisitos do projeto: interface grafica em Java Swing, banco de dados MySQL, autenticacao, dois perfis de usuario, CRUDs e dashboard com totalizadores.
 
 ## Funcionalidades
 
-- **Login seguro** com autenticação por usuário ou e-mail e senha criptografada (SHA-256)
-- **Cadastro de novos usuários** diretamente pela tela de registro
-- **Dashboard** com painel de controle exibindo totais de alunos, cursos, matrículas e usuários
-- **Gerenciar Alunos** — cadastro, edição, busca e exclusão
-- **Gerenciar Cursos** — cadastro, edição, busca e exclusão
-- **Gerenciar Matrículas** — vinculação de alunos a cursos, atualização de status
-- **Gerenciar Usuários** — exclusivo para ADMIN, com controle de perfis
-- **Controle de acesso por perfil**:
-  - **ADMIN** → acesso completo a todas as funcionalidades
-  - **ALUNO** → acesso limitado ao dashboard e consultas
+- Login seguro com autenticacao por usuario/e-mail e senha criptografada com SHA-256.
+- Cadastro de usuarios com perfil inicial ALUNO.
+- Dashboard com indicadores de alunos, cursos, matriculas, usuarios e status das matriculas.
+- CRUD de alunos, cursos, matriculas e usuarios.
+- Controle de acesso:
+  - ADMIN: acesso completo.
+  - ALUNO: acesso limitado conforme telas permitidas.
+- Banco MySQL com dados iniciais para demonstracao.
 
----
+## Tecnologias
 
-## Tecnologias utilizadas
-
-| Tecnologia | Versão |
+| Tecnologia | Uso |
 |---|---|
-| Java | JDK 24 |
-| Java Swing | javax.swing |
-| MySQL | 8.0 |
-| FlatLaf | 3.5.4 |
-| MigLayout | 11.4.2 |
-| MySQL Connector/J | 9.7.0 |
-
----
+| Java 21 | Plataforma da aplicacao |
+| Java Swing | Interface grafica desktop |
+| Maven | Build e dependencias |
+| MySQL 8 | Banco de dados |
+| FlatLaf | Aparencia moderna |
+| MigLayout | Layout das telas |
 
 ## Como executar
 
-### Pré-requisitos
-- JDK 17 ou superior
-- MySQL 8.0 ou superior
-- IntelliJ IDEA (ou outra IDE Java)
+### Pre-requisitos
 
-### 1. Configurar o banco de dados
+- JDK 21 configurado no `PATH`.
+- Apache Maven configurado no `PATH`.
+- MySQL Server 8 em execucao.
 
-Execute o script SQL no MySQL Workbench ou terminal:
+Verifique:
 
-```bash
+```powershell
+java -version
+javac -version
+mvn -version
+```
+
+### 1. Criar o banco
+
+No PowerShell, dentro da pasta do projeto:
+
+```powershell
 mysql -u root -p < schema.sql
 ```
 
-### 2. Configurar a conexão
+Se o comando `mysql` nao estiver no `PATH`, use o caminho completo do MySQL.
 
-Edite o arquivo `src/raven/db/Conexao.java`:
+### 2. Configurar conexao
 
-```java
-private static final String SENHA = "sua_senha_mysql";
+Por padrao, a aplicacao usa:
+
+- Banco: `eductech_manager`
+- Usuario: `root`
+- Senha: vazia, ou o valor informado na variavel `DB_PASSWORD`
+
+Tambem e possivel configurar por variaveis de ambiente:
+
+```powershell
+$env:DB_USER="root"
+$env:DB_PASSWORD="sua_senha_mysql"
+$env:DB_URL="jdbc:mysql://localhost:3306/eductech_manager?useSSL=false&serverTimezone=America/Sao_Paulo"
 ```
 
-### 3. Adicionar dependências (JARs)
+### 3. Rodar pelo Maven
 
-Adicione ao classpath do projeto:
-- `flatlaf-3.5.4.jar`
-- `miglayout-swing-11.4.2.jar`
-- `miglayout-core-11.4.2.jar`
-- `mysql-connector-j-9.7.0.jar`
+```powershell
+mvn exec:java
+```
 
-### 4. Executar
+### 4. Gerar JAR executavel
 
-Rode a classe principal: `raven.main.Application`
+```powershell
+mvn package
+java -jar target/eductech-manager-1.0.0.jar
+```
 
----
-
-## Usuários padrão
+## Usuarios padrao
 
 | Login | Senha | Perfil |
 |---|---|---|
 | `admin` | `admin123` | ADMIN |
 | `aluno` | `aluno123` | ALUNO |
 
----
+## Estrutura
 
-## Estrutura do projeto
-
-```
+```text
 src/
- raven/
-  main/        → Application.java, Dashboard.java
-  login/       → Login.java, Register.java
-  db/          → Conexao.java, UsuarioDAO.java, AlunoDAO.java,
-                 CursoDAO.java, MatriculaDAO.java
-  util/        → HashUtil.java
-  aluno/       → TelaAlunos.java
-  curso/       → TelaCursos.java
-  matricula/   → TelaMatriculas.java
-  usuario/     → TelaUsuarios.java
+  raven/
+    main/        Application.java, Dashboard.java
+    login/       Login.java, Register.java
+    db/          Conexao.java e DAOs
+    aluno/       TelaAlunos.java
+    curso/       TelaCursos.java
+    matricula/   TelaMatriculas.java
+    usuario/     TelaUsuarios.java
+    util/        HashUtil.java
 ```
-
----
-
-## ODS 4 — Educação de Qualidade
-
-Este projeto está alinhado ao **Objetivo de Desenvolvimento Sustentável 4** da ONU, que busca assegurar a educação inclusiva, equitativa e de qualidade. O EducTech Manager contribui facilitando a gestão de instituições de ensino, organizando informações de alunos, cursos e matrículas de forma eficiente e acessível.
-
----
-
-## Professores responsáveis
-
-Cristiane Fidelix e Erica Lopes  
-UC Programação de Soluções Computacionais — 2026/1

@@ -19,50 +19,79 @@ public class Login extends JPanel {
     }
 
     private void init() {
-        setLayout(new MigLayout("fill,insets 20", "[center]", "[center]"));
+        setLayout(new MigLayout("fill, insets 42", "[52%,grow][48%,grow]", "[center]"));
+        setBackground(Dashboard.COR_FUNDO);
+
+        JPanel hero = criarHero();
+        JPanel form = criarFormulario();
+        add(hero, "grow, push");
+        add(form, "grow, push, w 420:460:520");
+    }
+
+    private JPanel criarHero() {
+        JPanel hero = new JPanel(new MigLayout("fill, wrap, insets 44", "[grow]", "[grow][][grow]"));
+        hero.setBackground(Dashboard.COR_SIDEBAR);
+        hero.setBorder(BorderFactory.createLineBorder(new Color(42, 52, 70), 1));
+
+        JLabel marca = new JLabel("EducTech Manager");
+        marca.setForeground(Color.WHITE);
+        marca.setFont(new Font("Dialog", Font.BOLD, 34));
+
+        hero.add(Box.createVerticalGlue(), "grow, push, wrap");
+        hero.add(marca, "align center, wrap");
+        hero.add(Box.createVerticalGlue(), "grow, push");
+        return hero;
+    }
+
+    private JPanel criarFormulario() {
+        JPanel panel = new JPanel(new MigLayout("wrap, fillx, insets 42 46 38 46", "[grow]"));
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createLineBorder(Dashboard.COR_BORDA, 1));
 
         txtUsuario = new JTextField();
-        txtSenha   = new JPasswordField();
-        cmdEntrar  = new JButton("Entrar");
-
-        JPanel panel = new JPanel(new MigLayout("wrap, fillx, insets 35 45 30 45", "fill, 256:300"));
-        panel.putClientProperty(FlatClientProperties.STYLE,
-                "arc:28;" +
-                "[light]background:darken(@background,3%);" +
-                "[dark]background:lighten(@background,3%)");
+        txtSenha = new JPasswordField();
+        cmdEntrar = new JButton("Entrar");
 
         txtSenha.putClientProperty(FlatClientProperties.STYLE, "showRevealButton:true");
-        txtUsuario.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Usuário ou e-mail");
-        txtSenha.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT,   "Senha");
+        txtUsuario.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Usuario ou e-mail");
+        txtSenha.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Senha");
+        estilizarCampo(txtUsuario);
+        estilizarCampo(txtSenha);
 
-        cmdEntrar.putClientProperty(FlatClientProperties.STYLE,
-                "[light]background:darken(@background,10%);" +
-                "[dark]background:lighten(@background,10%);" +
-                "borderWidth:0;focusWidth:0;innerFocusWidth:0");
-
+        cmdEntrar.setFont(new Font("Dialog", Font.BOLD, 14));
+        cmdEntrar.setForeground(Color.WHITE);
+        cmdEntrar.setBackground(Dashboard.COR_ATIVO);
+        cmdEntrar.setBorder(BorderFactory.createEmptyBorder(12, 20, 12, 20));
+        cmdEntrar.setFocusPainted(false);
+        cmdEntrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         cmdEntrar.addActionListener(e -> autenticar());
-
-        // Também permite Enter no campo senha
         txtSenha.addActionListener(e -> autenticar());
 
-        JLabel lbTitulo  = new JLabel("Bem-vindo de volta");
-        JLabel descricao = new JLabel("Acesse sua conta no EducTech");
-
-        lbTitulo.putClientProperty(FlatClientProperties.STYLE, "font:bold +19");
-        descricao.putClientProperty(FlatClientProperties.STYLE,
-                "[light]foreground:lighten(@foreground,30%);" +
-                "[dark]foreground:darken(@foreground,30%)");
+        JLabel lbTitulo = new JLabel("Bem-vindo de volta");
+        lbTitulo.setFont(new Font("Dialog", Font.BOLD, 26));
+        lbTitulo.setForeground(Dashboard.COR_TEXTO);
+        JLabel descricao = new JLabel("Acesse sua conta para continuar.");
+        descricao.setFont(new Font("Dialog", Font.PLAIN, 14));
+        descricao.setForeground(Dashboard.COR_TEXTO_MUTED);
 
         panel.add(lbTitulo);
-        panel.add(descricao);
-        panel.add(new JLabel("Usuário"), "gapy 8");
-        panel.add(txtUsuario);
+        panel.add(descricao, "gapy 0 20");
+        panel.add(new JLabel("Usuario ou e-mail"));
+        panel.add(txtUsuario, "growx, h 42!");
         panel.add(new JLabel("Senha"), "gapy 8");
-        panel.add(txtSenha);
-        panel.add(cmdEntrar, "gapy 14");
-        panel.add(createCadastroLabel(), "gapy 6");
+        panel.add(txtSenha, "growx, h 42!");
+        panel.add(cmdEntrar, "growx, gapy 18, h 44!");
+        panel.add(createCadastroLabel(), "gapy 8");
+        return panel;
+    }
 
-        add(panel);
+    private void estilizarCampo(JTextField campo) {
+        campo.setBackground(Color.WHITE);
+        campo.setForeground(Dashboard.COR_TEXTO);
+        campo.setCaretColor(Dashboard.COR_TEXTO);
+        campo.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Dashboard.COR_BORDA, 1),
+                BorderFactory.createEmptyBorder(8, 12, 8, 12)));
     }
 
     private void autenticar() {
@@ -75,18 +104,17 @@ public class Login extends JPanel {
             return;
         }
 
-        UsuarioDAO dao    = new UsuarioDAO();
-        String[]   usuario = dao.autenticar(login, senha);
+        UsuarioDAO dao = new UsuarioDAO();
+        String[] usuario = dao.autenticar(login, senha);
 
         if (usuario != null) {
             JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            frame.getContentPane().removeAll();
-            frame.getContentPane().add(new Dashboard(usuario[0], usuario[1]));
+            frame.setContentPane(new Dashboard(usuario[0], usuario[1]));
             frame.revalidate();
             frame.repaint();
         } else {
             JOptionPane.showMessageDialog(this,
-                    "Usuário ou senha inválidos.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    "Usuario ou senha invalidos.", "Erro", JOptionPane.ERROR_MESSAGE);
             txtSenha.setText("");
             txtSenha.requestFocus();
         }
@@ -94,21 +122,18 @@ public class Login extends JPanel {
 
     private Component createCadastroLabel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        panel.putClientProperty(FlatClientProperties.STYLE, "background:null");
+        panel.setOpaque(false);
 
-        JLabel label = new JLabel("Não tem uma conta?");
-        label.putClientProperty(FlatClientProperties.STYLE,
-                "[light]foreground:lighten(@foreground,30%);" +
-                "[dark]foreground:darken(@foreground,30%)");
+        JLabel label = new JLabel("Nao tem uma conta?");
+        label.setForeground(Dashboard.COR_TEXTO_MUTED);
 
         JButton cmdCadastrar = new JButton("<html><a href=\"#\">Cadastre-se</a></html>");
-        cmdCadastrar.putClientProperty(FlatClientProperties.STYLE, "border:3,3,3,3");
+        cmdCadastrar.setBorder(BorderFactory.createEmptyBorder(3, 6, 3, 3));
         cmdCadastrar.setContentAreaFilled(false);
         cmdCadastrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         cmdCadastrar.addActionListener(e -> {
             JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            frame.getContentPane().removeAll();
-            frame.getContentPane().add(new Register());
+            frame.setContentPane(new Register());
             frame.revalidate();
             frame.repaint();
         });

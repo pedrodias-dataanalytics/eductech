@@ -50,11 +50,12 @@ public class TelaMatriculas extends JPanel {
         tituloPanel.add(lbSub);
         JButton btnNovo = TelaAlunos.criarBotaoPrimario("+ Nova Matrícula", COR);
         btnNovo.addActionListener(e -> limparFormulario());
+        btnNovo.setVisible(podeEditar());
         header.add(tituloPanel, "grow");
         header.add(btnNovo);
         add(header, BorderLayout.NORTH);
 
-        JPanel corpo = new JPanel(new MigLayout("fill, insets 0 36 36 36, gap 20", "[grow][320!]", "[grow]"));
+        JPanel corpo = new JPanel(new MigLayout("fill, insets 0 28 28 28, gap 18", "[700,grow,fill][300!,fill]", "[grow]"));
         corpo.setBackground(Dashboard.COR_FUNDO);
 
         JPanel tabelaPanel = new JPanel(new MigLayout("fill, insets 0", "[grow]", "[][grow]"));
@@ -76,13 +77,13 @@ public class TelaMatriculas extends JPanel {
         tabela.getSelectionModel().addListSelectionListener(e -> { if (!e.getValueIsAdjusting()) preencherFormulario(); });
         tabelaPanel.add(TelaAlunos.criarScrollPane(tabela), "grow, push");
         corpo.add(tabelaPanel, "grow, push");
-        corpo.add(criarFormulario(), "growy, pushy, aligny top");
+        corpo.add(criarFormulario(), "growx, aligny top");
         add(corpo, BorderLayout.CENTER);
         carregarTabela();
     }
 
     private JPanel criarFormulario() {
-        JPanel form = new JPanel(new MigLayout("wrap, fillx, insets 24", "[grow]"));
+        JPanel form = new JPanel(new MigLayout("wrap, fillx, insets 18", "[grow]"));
         form.setBackground(Dashboard.COR_CARD);
         form.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(3, 0, 0, 0, COR),
@@ -106,27 +107,28 @@ public class TelaMatriculas extends JPanel {
         btnExcluir.setEnabled(false);
         btnSalvar.addActionListener(e -> salvar());
         btnExcluir.addActionListener(e -> excluir());
+        aplicarPermissao();
 
-        form.add(lbForm, "gapy 0 16");
-        form.add(TelaAlunos.criarLabel("Aluno"),  "gapy 4"); form.add(cmbAluno,  "growx");
-        form.add(TelaAlunos.criarLabel("Curso"),  "gapy 8"); form.add(cmbCurso,  "growx");
-        form.add(TelaAlunos.criarLabel("Data início (AAAA-MM-DD)"), "gapy 8"); form.add(txtData, "growx");
-        form.add(TelaAlunos.criarLabel("Status"), "gapy 8"); form.add(cmbStatus, "growx");
-        form.add(btnSalvar,  "growx, gapy 16 6");
-        form.add(btnExcluir, "growx");
+        form.add(lbForm, "gapy 0 10");
+        form.add(TelaAlunos.criarLabel("Aluno"),  "gapy 4"); form.add(cmbAluno,  "growx, h 38!");
+        form.add(TelaAlunos.criarLabel("Curso"),  "gapy 8"); form.add(cmbCurso,  "growx, h 38!");
+        form.add(TelaAlunos.criarLabel("Data início (AAAA-MM-DD)"), "gapy 8"); form.add(txtData, "growx, h 38!");
+        form.add(TelaAlunos.criarLabel("Status"), "gapy 8"); form.add(cmbStatus, "growx, h 38!");
+        form.add(btnSalvar,  "growx, gapy 12 6, h 42!");
+        form.add(btnExcluir, "growx, h 40!");
         return form;
     }
 
     private JComboBox<String> criarCombo() {
         JComboBox<String> cb = new JComboBox<>();
-        cb.setBackground(new Color(25, 25, 40));
+        cb.setBackground(Color.WHITE);
         cb.setForeground(Dashboard.COR_TEXTO);
         return cb;
     }
 
     private JComboBox<String> criarCombo(String[] items) {
         JComboBox<String> cb = new JComboBox<>(items);
-        cb.setBackground(new Color(25, 25, 40));
+        cb.setBackground(Color.WHITE);
         cb.setForeground(Dashboard.COR_TEXTO);
         return cb;
     }
@@ -151,7 +153,7 @@ public class TelaMatriculas extends JPanel {
         cmbStatus.setSelectedItem(modelo.getValueAt(row, 4).toString());
         for (int i = 0; i < cmbAluno.getItemCount(); i++) if (cmbAluno.getItemAt(i).equals(an)) { cmbAluno.setSelectedIndex(i); break; }
         for (int i = 0; i < cmbCurso.getItemCount(); i++) if (cmbCurso.getItemAt(i).equals(cn)) { cmbCurso.setSelectedIndex(i); break; }
-        btnExcluir.setEnabled(true);
+        btnExcluir.setEnabled(podeEditar());
     }
 
     private void limparFormulario() {
@@ -164,6 +166,10 @@ public class TelaMatriculas extends JPanel {
     }
 
     private void salvar() {
+        if (!podeEditar()) {
+            mostrarAcessoConsulta();
+            return;
+        }
         if (listaAlunos.isEmpty() || listaCursos.isEmpty()) { JOptionPane.showMessageDialog(this, "Cadastre alunos e cursos primeiro.", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
         boolean ok;
         if (idSelecionado == -1) {
@@ -178,10 +184,33 @@ public class TelaMatriculas extends JPanel {
     }
 
     private void excluir() {
+        if (!podeEditar()) {
+            mostrarAcessoConsulta();
+            return;
+        }
         if (idSelecionado < 0) return;
         if (JOptionPane.showConfirmDialog(this, "Excluir esta matrícula?", "Confirmar", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             if (dao.excluir(idSelecionado)) { JOptionPane.showMessageDialog(this, "Matrícula excluída.", "Sucesso", JOptionPane.INFORMATION_MESSAGE); limparFormulario(); carregarTabela(); }
             else JOptionPane.showMessageDialog(this, "Erro ao excluir.", "Erro", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private boolean podeEditar() {
+        return "ADMIN".equals(perfil);
+    }
+
+    private void aplicarPermissao() {
+        boolean editar = podeEditar();
+        cmbAluno.setEnabled(editar);
+        cmbCurso.setEnabled(editar);
+        cmbStatus.setEnabled(editar);
+        txtData.setEditable(editar);
+        btnSalvar.setVisible(editar);
+        btnExcluir.setVisible(editar);
+    }
+
+    private void mostrarAcessoConsulta() {
+        JOptionPane.showMessageDialog(this,
+                "Seu perfil permite apenas consulta.", "Acesso limitado", JOptionPane.INFORMATION_MESSAGE);
     }
 }

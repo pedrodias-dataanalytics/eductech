@@ -53,19 +53,20 @@ public class TelaAlunos extends JPanel {
 
         JButton btnNovo = criarBotaoPrimario("+ Novo Aluno", COR);
         btnNovo.addActionListener(e -> limparFormulario());
+        btnNovo.setVisible(podeEditar());
 
         header.add(tituloPanel, "grow");
         header.add(btnNovo);
         add(header, BorderLayout.NORTH);
 
         // Corpo
-        JPanel corpo = new JPanel(new MigLayout("fill, insets 0 36 36 36, gap 20", "[grow][320!]", "[grow]"));
+        JPanel corpo = new JPanel(new MigLayout("fill, insets 0 28 28 28, gap 18", "[700,grow,fill][300!,fill]", "[grow]"));
         corpo.setBackground(Dashboard.COR_FUNDO);
 
         // Tabela
         JPanel tabelaPanel = criarPainelTabela();
         corpo.add(tabelaPanel, "grow, push");
-        corpo.add(criarFormulario(), "growy, pushy, aligny top");
+        corpo.add(criarFormulario(), "growx, aligny top");
         add(corpo, BorderLayout.CENTER);
 
         carregarTabela();
@@ -100,7 +101,7 @@ public class TelaAlunos extends JPanel {
     }
 
     private JPanel criarFormulario() {
-        JPanel form = new JPanel(new MigLayout("wrap, fillx, insets 24", "[grow]"));
+        JPanel form = new JPanel(new MigLayout("wrap, fillx, insets 18", "[grow]"));
         form.setBackground(Dashboard.COR_CARD);
         form.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(3, 0, 0, 0, COR),
@@ -121,18 +122,19 @@ public class TelaAlunos extends JPanel {
 
         btnSalvar.addActionListener(e -> salvar());
         btnExcluir.addActionListener(e -> excluir());
+        aplicarPermissao();
 
-        form.add(lbForm,                 "gapy 0 16");
+        form.add(lbForm,                 "gapy 0 10");
         form.add(criarLabel("Nome"),     "gapy 4");
-        form.add(txtNome,   "growx");
+        form.add(txtNome,   "growx, h 38!");
         form.add(criarLabel("E-mail"),   "gapy 8");
-        form.add(txtEmail,  "growx");
+        form.add(txtEmail,  "growx, h 38!");
         form.add(criarLabel("CPF"),      "gapy 8");
-        form.add(txtCpf,    "growx");
+        form.add(txtCpf,    "growx, h 38!");
         form.add(criarLabel("Telefone"), "gapy 8");
-        form.add(txtTelefone, "growx");
-        form.add(btnSalvar,  "growx, gapy 16 6");
-        form.add(btnExcluir, "growx");
+        form.add(txtTelefone, "growx, h 38!");
+        form.add(btnSalvar,  "growx, gapy 12 6, h 42!");
+        form.add(btnExcluir, "growx, h 40!");
         return form;
     }
 
@@ -156,7 +158,7 @@ public class TelaAlunos extends JPanel {
         txtEmail.setText(modelo.getValueAt(row, 2).toString());
         txtCpf.setText(modelo.getValueAt(row, 3).toString());
         txtTelefone.setText(modelo.getValueAt(row, 4).toString());
-        btnExcluir.setEnabled(true);
+        btnExcluir.setEnabled(podeEditar());
     }
 
     private void limparFormulario() {
@@ -169,6 +171,10 @@ public class TelaAlunos extends JPanel {
     }
 
     private void salvar() {
+        if (!podeEditar()) {
+            mostrarAcessoConsulta();
+            return;
+        }
         String nome = txtNome.getText().trim(), email = txtEmail.getText().trim(),
                 cpf  = txtCpf.getText().trim(),  tel   = txtTelefone.getText().trim();
         if (nome.isEmpty() || email.isEmpty() || cpf.isEmpty()) {
@@ -180,6 +186,10 @@ public class TelaAlunos extends JPanel {
     }
 
     private void excluir() {
+        if (!podeEditar()) {
+            mostrarAcessoConsulta();
+            return;
+        }
         if (idSelecionado < 0) return;
         if (JOptionPane.showConfirmDialog(this, "Excluir este aluno?", "Confirmar", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             if (dao.excluir(idSelecionado)) { JOptionPane.showMessageDialog(this, "Aluno excluído.", "Sucesso", JOptionPane.INFORMATION_MESSAGE); limparFormulario(); carregarTabela(); }
@@ -187,10 +197,29 @@ public class TelaAlunos extends JPanel {
         }
     }
 
+    private boolean podeEditar() {
+        return "ADMIN".equals(perfil);
+    }
+
+    private void aplicarPermissao() {
+        boolean editar = podeEditar();
+        txtNome.setEditable(editar);
+        txtEmail.setEditable(editar);
+        txtCpf.setEditable(editar);
+        txtTelefone.setEditable(editar);
+        btnSalvar.setVisible(editar);
+        btnExcluir.setVisible(editar);
+    }
+
+    private void mostrarAcessoConsulta() {
+        JOptionPane.showMessageDialog(this,
+                "Seu perfil permite apenas consulta.", "Acesso limitado", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     // ── Helpers de UI ────────────────────────────────────────────────
     public static JTextField criarCampo(String placeholder) {
         JTextField f = new JTextField();
-        f.setBackground(new Color(25, 25, 40));
+        f.setBackground(Color.WHITE);
         f.setForeground(Dashboard.COR_TEXTO);
         f.setCaretColor(Dashboard.COR_TEXTO);
         f.setBorder(BorderFactory.createCompoundBorder(
@@ -233,7 +262,7 @@ public class TelaAlunos extends JPanel {
         JButton btn = new JButton(texto);
         btn.setFont(new Font("Dialog", Font.PLAIN, 13));
         btn.setForeground(cor);
-        btn.setBackground(new Color(239, 68, 68, 20));
+        btn.setBackground(new Color(254, 226, 226));
         btn.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(239, 68, 68, 80), 1),
                 BorderFactory.createEmptyBorder(9, 20, 9, 20)));
@@ -246,12 +275,12 @@ public class TelaAlunos extends JPanel {
         JTable t = new JTable(modelo);
         t.setBackground(Dashboard.COR_CARD);
         t.setForeground(Dashboard.COR_TEXTO);
-        t.setSelectionBackground(new Color(99, 102, 241, 60));
-        t.setSelectionForeground(Color.WHITE);
+        t.setSelectionBackground(new Color(219, 234, 254));
+        t.setSelectionForeground(Dashboard.COR_TEXTO);
         t.setGridColor(Dashboard.COR_BORDA);
         t.setRowHeight(34);
         t.setFont(new Font("Dialog", Font.PLAIN, 13));
-        t.getTableHeader().setBackground(new Color(22, 22, 38));
+        t.getTableHeader().setBackground(new Color(248, 250, 252));
         t.getTableHeader().setForeground(Dashboard.COR_TEXTO_MUTED);
         t.getTableHeader().setFont(new Font("Dialog", Font.BOLD, 12));
         t.getTableHeader().setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Dashboard.COR_BORDA));

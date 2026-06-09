@@ -1,6 +1,6 @@
 package raven.main;
 
-import com.formdev.flatlaf.themes.FlatMacDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import raven.login.Login;
 
 import javax.swing.*;
@@ -13,18 +13,19 @@ public class Application extends JFrame {
     }
 
     private void init() {
-        setTitle("EducTech");
+        setTitle("EducTech Manager");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(new Dimension(1200, 700));
-        setMinimumSize(new Dimension(900, 600));
+        setSize(new Dimension(1500, 900));
+        setMinimumSize(new Dimension(1280, 760));
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
         setContentPane(new Login());
     }
 
     public static void main(String[] args) {
-        FlatMacDarkLaf.registerCustomDefaultsSource("raven.themes");
+        FlatLightLaf.registerCustomDefaultsSource("raven.themes");
         UIManager.put("defaultFont", new Font(Font.SANS_SERIF, Font.PLAIN, 13));
-        FlatMacDarkLaf.setup();
+        FlatLightLaf.setup();
         EventQueue.invokeLater(() -> new Application().setVisible(true));
     }
 }

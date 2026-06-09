@@ -56,30 +56,47 @@ CREATE TABLE IF NOT EXISTS matriculas (
 --  Dados iniciais
 
 -- Administrador padrão
-INSERT INTO usuarios (nome, login, email, senha, perfil) VALUES
+INSERT IGNORE INTO usuarios (nome, login, email, senha, perfil) VALUES
 ('Administrador', 'admin', 'admin@eductech.com',
  SHA2('admin123', 256), 'ADMIN');
 
 -- Alunos de exemplo
-INSERT INTO alunos (nome, email, cpf, telefone) VALUES
+INSERT IGNORE INTO alunos (nome, email, cpf, telefone) VALUES
 ('Ana Paula Silva',   'ana@email.com',   '111.222.333-44', '(11) 91111-2222'),
 ('Bruno Costa',       'bruno@email.com', '222.333.444-55', '(11) 92222-3333'),
 ('Carla Mendes',      'carla@email.com', '333.444.555-66', '(11) 93333-4444');
 
 -- Cursos de exemplo
-INSERT INTO cursos (nome, descricao, carga_horaria) VALUES
-('Java Básico',       'Fundamentos da linguagem Java',            60),
-('Banco de Dados',    'SQL, modelagem e administração MySQL',     40),
-('Desenvolvimento Web','HTML, CSS, JavaScript e frameworks',      80);
+INSERT INTO cursos (nome, descricao, carga_horaria)
+SELECT 'Java Básico', 'Fundamentos da linguagem Java', 60
+WHERE NOT EXISTS (SELECT 1 FROM cursos WHERE nome = 'Java Básico');
+
+INSERT INTO cursos (nome, descricao, carga_horaria)
+SELECT 'Banco de Dados', 'SQL, modelagem e administração MySQL', 40
+WHERE NOT EXISTS (SELECT 1 FROM cursos WHERE nome = 'Banco de Dados');
+
+INSERT INTO cursos (nome, descricao, carga_horaria)
+SELECT 'Desenvolvimento Web', 'HTML, CSS, JavaScript e frameworks', 80
+WHERE NOT EXISTS (SELECT 1 FROM cursos WHERE nome = 'Desenvolvimento Web');
 
 -- Matrículas de exemplo
-INSERT INTO matriculas (aluno_id, curso_id, data_inicio, status) VALUES
-(1, 1, CURDATE(), 'ATIVA'),
-(1, 2, CURDATE(), 'ATIVA'),
-(2, 1, CURDATE(), 'ATIVA'),
-(3, 3, CURDATE(), 'ATIVA');
+INSERT INTO matriculas (aluno_id, curso_id, data_inicio, status)
+SELECT 1, 1, CURDATE(), 'ATIVA'
+WHERE NOT EXISTS (SELECT 1 FROM matriculas WHERE aluno_id = 1 AND curso_id = 1);
+
+INSERT INTO matriculas (aluno_id, curso_id, data_inicio, status)
+SELECT 1, 2, CURDATE(), 'ATIVA'
+WHERE NOT EXISTS (SELECT 1 FROM matriculas WHERE aluno_id = 1 AND curso_id = 2);
+
+INSERT INTO matriculas (aluno_id, curso_id, data_inicio, status)
+SELECT 2, 1, CURDATE(), 'ATIVA'
+WHERE NOT EXISTS (SELECT 1 FROM matriculas WHERE aluno_id = 2 AND curso_id = 1);
+
+INSERT INTO matriculas (aluno_id, curso_id, data_inicio, status)
+SELECT 3, 3, CURDATE(), 'ATIVA'
+WHERE NOT EXISTS (SELECT 1 FROM matriculas WHERE aluno_id = 3 AND curso_id = 3);
 
 -- Usuário padrão tipo ALUNO
-INSERT INTO usuarios (nome, login, email, senha, perfil) VALUES
+INSERT IGNORE INTO usuarios (nome, login, email, senha, perfil) VALUES
 ('Aluno Padrão', 'aluno', 'aluno@eductech.com',
  SHA2('aluno123', 256), 'ALUNO');
