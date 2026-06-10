@@ -1,5 +1,7 @@
 # EducTech Manager
 
+Vídeo: https://youtu.be/HFY7xcb4hzc?si=plLilTg0EfAvo_6D
+
 Sistema desktop de gestao educacional desenvolvido em Java Swing + MySQL.
 
 **ODS 4 - Educacao de Qualidade**  
